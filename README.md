@@ -1,43 +1,69 @@
-# Astro Starter Kit: Minimal
+# Tracker de Jueces y Magistrados de Argentina
 
-```sh
-pnpm create astro@latest -- --template minimal
+Un sitio web moderno y transparente para consultar información pública de jueces y magistrados en Argentina.
+
+Explora el listado completo, busca por nombre, provincia, cargo o juzgado y accede al detalle de cada magistrado con sus fallos más relevantes.
+
+## ✨ Características
+
+- **Búsqueda y filtrado en tiempo real** por nombre, provincia, cargo y juzgado
+- **Paginación** eficiente en el listado principal
+- **Página de detalle** por magistrado (identificado por DNI)
+- Información clave: cargo, órgano, jurisdicción, provincia, fecha de jura, género, estado, etc.
+- **Sección de fallos relevantes**: liberaciones, sobreseimientos, absoluciones, declaraciones de inconstitucionalidad y oposiciones a reformas
+- Diseño moderno, totalmente responsive y accesible
+- Generación estática (SSG) con excelente rendimiento
+- HTML semántico y buenas prácticas de accesibilidad
+
+## 🛠 Tecnologías
+
+- **[Astro](https://astro.build)** — Framework principal
+- **Tailwind CSS** — Estilos
+- **TypeScript** — Tipado
+- **React + TanStack Table** — Tabla avanzada (opcional)
+- Datos en **JSON** (generados en build)
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/tu-usuario/JUECES-ARGENTINA.git
+cd tracker-jueces-argentina
+
+# 2. Instalar dependencias
+npm install
+# o
+pnpm install
+# o
+yarn install
+
+# 3. Ejecutar en desarrollo
+npm run dev
+
+# 4. Construir para producción
+npm run build
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+> La versión estática se generará en la carpeta dist/.
 
-## 🚀 Project Structure
+## 📊 Datos
 
-Inside of your Astro project, you'll see the following folders and files:
+> magistrados.json — Información básica de cada juez/magistrado
+> fallos.json — Fallos relevantes organizados por DNI:
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```JSON
+{
+  "byDni": {
+    "12345678": [
+      {
+        "fecha": "2024-03-15",
+        "titulo": "Título del fallo",
+        "resumen": "Resumen objetivo y neutral...",
+        "tipo": "liberacion | sobreseimiento | inconstitucionalidad | oposicion_reforma | absolucion",
+        "link": "https://...",
+        "fuente": "SAIJ | CSJN | ..."
+      }
+    ]
+  }
+}
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Los datos provienen exclusivamente de fuentes públicas del Poder Judicial de la Nación y el Consejo de la Magistratura.
