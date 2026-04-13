@@ -1,0 +1,260 @@
+---
+import Layout from "~/layouts/Layout.astro";
+import type { GetStaticPaths } from "astro";
+
+import magistradosRaw from "~/data/magistrados.json";
+
+export const getStaticPaths = (() => {
+  return magistradosRaw.magistrados.map((mag: any) => ({
+    params: { dni: mag.dni.toString() },
+  }));
+}) satisfies GetStaticPaths;
+
+const { dni } = Astro.params;
+
+const magistrado = magistradosRaw.magistrados.find(
+  (m: any) => m.dni.toString() === dni,
+);
+
+if (!magistrado) {
+  return Astro.redirect("/404");
+}
+
+// Formateo de fechas
+const fechaJuraFormatted = magistrado.fecha_jura
+  ? new Date(magistrado.fecha_jura).toLocaleDateString("es-AR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
+  : null;
+
+const normaFechaFormatted = magistrado.norma_fecha
+  ? new Date(magistrado.norma_fecha).toLocaleDateString("es-AR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
+  : null;
+
+const antiguedad = magistrado.fecha_jura
+  ? `${Math.floor(
+      (new Date().getTime() - new Date(magistrado.fecha_jura).getTime()) /
+        (1000 * 3600 * 24 * 365.25),
+    )} años`
+  : "No disponible";
+---
+
+<Layout title={`${magistrado.nombre} - Tracker de Jueces Argentina`}>
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <article class="space-y-12">
+      <!-- Header del perfil -->
+      <header
+        class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-10"
+      >
+        <div class="flex flex-col md:flex-row gap-8">
+          <div
+            class="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl flex items-center justify-center text-white text-6xl font-bold flex-shrink-0 shadow-inner"
+          >
+            {
+              magistrado.nombre
+                .split(" ")
+                .slice(0, 2)
+                .map((n: string) => n[0])
+                .join("")
+            }
+          </div>
+
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center gap-4">
+              <h1 class="text-4xl font-bold tracking-tight text-gray-900">
+                {magistrado.nombre}
+              </h1>
+              <span
+                class={`inline-flex items-center px-5 py-1.5 rounded-full text-sm font-medium
+                ${
+                  magistrado.estado === "Titular"
+                    ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200"
+                    : magistrado.estado?.includes("Subrogante")
+                      ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200"
+                      : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {magistrado.estado || "Sin estado"}
+              </span>
+            </div>
+
+            <p class="text-2xl text-gray-700 mt-2">{magistrado.cargo}</p>
+            <p class="text-gray-600 mt-1">
+              {magistrado.organo}{
+                magistrado.organo_tipo ? ` • ${magistrado.organo_tipo}` : ""
+              }
+            </p>
+
+            <dl
+              class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6 text-sm"
+            >
+              <div>
+                <dt class="text-gray-500 text-xs uppercase tracking-widest">
+                  DNI
+                </dt>
+                <dd class="font-mono font-medium text-lg">{magistrado.dni}</dd>
+              </div>
+
+              {
+                magistrado.provincia && (
+                  <div>
+                    <dt class="text-gray-500 text-xs uppercase tracking-widest">
+                      Provincia
+                    </dt>
+                    <dd class="font-medium">{magistrado.provincia}</dd>
+                  </div>
+                )
+              }
+
+              <div>
+                <dt class="text-gray-500 text-xs uppercase tracking-widest">
+                  Jurisdicción
+                </dt>
+                <dd class="font-medium">{magistrado.jurisdiccion}</dd>
+              </div>
+
+              {
+                fechaJuraFormatted && (
+                  <div>
+                    <dt class="text-gray-500 text-xs uppercase tracking-widest">
+                      Fecha de jura
+                    </dt>
+                    <dd class="font-medium">{fechaJuraFormatted}</dd>
+                    <dd class="text-xs text-gray-500 mt-1">
+                      Antigüedad: <span class="font-medium">{antiguedad}</span>
+                    </dd>
+                  </div>
+                )
+              }
+
+              {
+                magistrado.genero && (
+                  <div>
+                    <dt class="text-gray-500 text-xs uppercase tracking-widest">
+                      Género
+                    </dt>
+                    <dd class="font-medium">{magistrado.genero}</dd>
+                  </div>
+                )
+              }
+
+              {
+                normaFechaFormatted && (
+                  <div>
+                    <dt class="text-gray-500 text-xs uppercase tracking-widest">
+                      Fecha de la norma
+                    </dt>
+                    <dd class="font-medium">{normaFechaFormatted}</dd>
+                  </div>
+                )
+              }
+
+              {
+                magistrado.concurso_en_tramite && (
+                  <div class="col-span-full pt-4">
+                    <div class="inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 px-5 py-2 rounded-2xl text-sm font-medium">
+                      <span>⚠️</span> Concurso en trámite
+                    </div>
+                  </div>
+                )
+              }
+            </dl>
+          </div>
+        </div>
+      </header>
+
+      <!-- Secciones de detalle -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section class="bg-white rounded-3xl p-8 shadow border border-gray-100">
+          <h2 class="text-xl font-semibold mb-6">⚖️ Cargo Actual</h2>
+          <dl class="space-y-5">
+            <div class="flex justify-between py-3 border-b border-gray-100">
+              <dt class="text-gray-600">Cargo</dt>
+              <dd class="font-medium">{magistrado.cargo}</dd>
+            </div>
+            <div class="flex justify-between py-3 border-b border-gray-100">
+              <dt class="text-gray-600">Órgano</dt>
+              <dd class="font-medium">{magistrado.organo}</dd>
+            </div>
+            {
+              magistrado.organo_tipo && (
+                <div class="flex justify-between py-3 border-b border-gray-100">
+                  <dt class="text-gray-600">Tipo de órgano</dt>
+                  <dd class="font-medium">{magistrado.organo_tipo}</dd>
+                </div>
+              )
+            }
+            <div class="flex justify-between py-3">
+              <dt class="text-gray-600">Jurisdicción</dt>
+              <dd class="font-medium">{magistrado.jurisdiccion}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="bg-white rounded-3xl p-8 shadow border border-gray-100">
+          <h2 class="text-xl font-semibold mb-6">📜 Designación</h2>
+          <dl class="space-y-5">
+            {
+              fechaJuraFormatted && (
+                <div class="flex justify-between py-3 border-b border-gray-100">
+                  <dt class="text-gray-600">Fecha de jura</dt>
+                  <dd class="font-medium">{fechaJuraFormatted}</dd>
+                </div>
+              )
+            }
+            {
+              normaFechaFormatted && (
+                <div class="flex justify-between py-3 border-b border-gray-100">
+                  <dt class="text-gray-600">Fecha de la norma</dt>
+                  <dd class="font-medium">{normaFechaFormatted}</dd>
+                </div>
+              )
+            }
+            <div class="flex justify-between py-3">
+              <dt class="text-gray-600">Estado</dt>
+              <dd
+                class={`font-medium ${magistrado.estado === "Titular" ? "text-emerald-700" : "text-amber-700"}`}
+              >
+                {magistrado.estado || "Sin información"}
+              </dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+
+      {
+        magistrado.concurso_en_tramite && (
+          <section class="bg-amber-50 border border-amber-200 rounded-3xl p-8">
+            <div class="flex gap-4">
+              <span class="text-4xl">⚠️</span>
+              <div>
+                <h3 class="font-semibold text-amber-900">
+                  Concurso en trámite
+                </h3>
+                <p class="text-amber-800 mt-2">
+                  Este magistrado participa actualmente en un concurso para un
+                  nuevo cargo o titularidad.
+                </p>
+              </div>
+            </div>
+          </section>
+        )
+      }
+
+      <footer class="text-center pt-8">
+        <a
+          href="/"
+          class="inline-flex items-center gap-3 px-8 py-4 bg-gray-900 hover:bg-black text-white rounded-2xl font-medium transition-all"
+        >
+          ← Volver al listado de magistrados
+        </a>
+      </footer>
+    </article>
+  </main>
+</Layout>
